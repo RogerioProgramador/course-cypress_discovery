@@ -1,0 +1,38 @@
+name: Cypress Regression Tests
+
+# Sera executado sempre que houver um push
+on: [push]
+
+jobs:
+
+  # nome do teste
+  ui-chrome-tests:
+  # Qual sistema que irá executar esse workflow
+    runs-on: ubuntu-latest
+  # Template pronto para o ubuntu estar totalmente preparado para o cypress
+    container: cypress/browsers:node14.17.0-chrome88-ff89
+  # Sem colocar essa estratégia, o workflow irá abortar caso encontre um fail no teste
+    strategy:
+      fail-fast: false
+  # Obtém uma cópia do código e coloca dentro do runner(ubuntu-latest)
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      
+      # Configuração para executar o teste no 
+      - name: 'UI Tests - Chrome'
+        uses: cypress-io/github-action@v2
+        with:
+          install-command: yarn install
+          # Plugin que verifica se o sistema está no ar antes de começar os testes
+          wait-on: ${{ secrets.BASE_URL }}
+          wait-on-timeout: 120
+          browser: chrome
+          # Para Gravar os resultados
+          record: true
+          group: 'UI - Chrome'
+          spec: cypress/integration/*
+        # Environment keys
+        env:
+          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
